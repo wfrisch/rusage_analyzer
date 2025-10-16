@@ -1,0 +1,81 @@
+`rusage_analyzer` attempts to find side-channel leaks by statistically
+comparing the resource usage (rusage) of two configurable commands on Linux.
+
+Example: no difference (identical process)
+------------------------------------------
+
+```
+$ ./rusage_analyzer -n 500 --scenario-a -- /usr/bin/hello --scenario-b -- /usr/bin/hello 
+[*] Collecting 100 samples for scenario: 'Scenario A'...
+....................................................................................................
+[*] Collection complete.
+
+[*] Collecting 100 samples for scenario: 'Scenario B'...
+....................................................................................................
+[*] Collection complete.
+
+---------------------------------------------------------------------------
+Side-Channel Analysis Report
+---------------------------------------------------------------------------
+Metric          | p-value      | Median A     | Median B     | Significant 
+                               | (Scenario A) | (Scenario B) | (alpha=0.025)
+---------------------------------------------------------------------------
+ru_nvcsw        | 3.32582e-03  | 1.00         | 1.00         | no          
+elapsed_us      | 4.46960e-02  | 1104.50      | 1078.50      | no          
+ru_nivcsw       | 3.02772e-01  | 0.00         | 0.00         | no          
+ru_minflt       | 4.81542e-01  | 124.00       | 124.00       | no          
+ru_utime        | 5.68257e-01  | 0.00         | 0.00         | no          
+ru_stime        | 6.02679e-01  | 0.00         | 0.00         | no          
+ru_maxrss       | 6.97970e-01  | 4208.00      | 4208.00      | no          
+ru_inblock      | 1.00000e+00  | 0.00         | 0.00         | no          
+ru_majflt       | 1.00000e+00  | 0.00         | 0.00         | no          
+ru_oublock      | 1.00000e+00  | 0.00         | 0.00         | no          
+---------------------------------------------------------------------------
+
+[-] Conclusion: No statistically significant predictor found with the current data.
+Try increasing SAMPLE_COUNT or check if the scenarios have different resource footprints.
+```
+
+Example: silent process with malloc() of variable size
+------------------------------------------------------
+
+This detects [CVE-2024-0149](https://security.opensuse.org/2025/03/26/nvidia-modprobe.html).
+
+```
+$ ./rusage_analyzer -n 500 --scenario-a -- ./demo/malloc 1 --scenario-b -- ./demo/malloc 4096
+
+[*] Collecting 100 samples for scenario: 'Scenario A'...
+....................................................................................................
+[*] Collection complete.
+
+[*] Collecting 100 samples for scenario: 'Scenario B'...
+....................................................................................................
+[*] Collection complete.
+
+---------------------------------------------------------------------------
+Side-Channel Analysis Report
+---------------------------------------------------------------------------
+Metric          | p-value      | Median A     | Median B     | Significant 
+                |              | (Scenario A) | (Scenario B) | (alpha=0.025)
+---------------------------------------------------------------------------
+ru_minflt       | 0.00000e+00  | 98.00        | 99.00        | YES         
+ru_nvcsw        | 1.84345e-01  | 0.00         | 1.00         | no          
+ru_maxrss       | 2.46967e-01  | 1592.00      | 1592.00      | no          
+ru_stime        | 3.51166e-01  | 0.00         | 0.00         | no          
+elapsed_us      | 3.82614e-01  | 743.00       | 745.50       | no          
+ru_nivcsw       | 6.17364e-01  | 0.00         | 0.00         | no          
+ru_utime        | 7.50660e-01  | 0.00         | 0.00         | no          
+ru_inblock      | 1.00000e+00  | 0.00         | 0.00         | no          
+ru_majflt       | 1.00000e+00  | 0.00         | 0.00         | no          
+ru_oublock      | 1.00000e+00  | 0.00         | 0.00         | no          
+---------------------------------------------------------------------------
+
+[+] Conclusion: The best predictor is 'ru_minflt'.
+    You can likely distinguish between the two scenarios by observing this value.
+```
+
+References
+==========
+
+- [getrusage()](https://manpages.opensuse.org/Tumbleweed/man-pages/getrusage.2.en.html)
+- [CVE-2024-0149 (information leak)](https://security.opensuse.org/2025/03/26/nvidia-modprobe.html)
