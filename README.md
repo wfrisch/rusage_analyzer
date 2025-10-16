@@ -6,6 +6,26 @@ Beware that false positives and negatives are not uncommon. Naturally other
 processes and system load can influence the run-time behavior of the programs
 under test, on an operating system with preemptive multi-tasking.
 
+Usage
+=====
+```
+Usage: ./rusage_analyzer [GLOBAL_OPTIONS] --scenario-a [OPTS] -- <COMMAND_A> --scenario-b [OPTS] -- <COMMAND_B>
+
+Global Options:
+  -n <N>                    Number of samples to collect (default: 100)
+  -a <A>                    Significance level for the U-test (default: 0.05)
+
+Scenario Options (must be placed after --scenario-a or --scenario-b):
+  -l <STRING>               A descriptive label for the scenario in the report
+  -e <KEY=VALUE>            Set an environment variable (can be used multiple times)
+
+The '--' separator is mandatory before each command.
+
+Example:
+  ./rusage_analyzer -n 200 --scenario-a -l 'C Locale' -e LC_ALL=C -- /usr/bin/grep 'word' file.txt \
+          --scenario-b -l 'UTF8 Locale' -e LC_ALL=en_US.UTF-8 -- /usr/bin/grep 'word' file.txt
+```
+
 Example: no difference (identical process)
 ------------------------------------------
 
