@@ -1,5 +1,10 @@
-`rusage_analyzer` attempts to find side-channel leaks by statistically
-comparing the resource usage (rusage) of two configurable commands on Linux.
+`rusage_analyzer` attempts to find side-channel leaks in programs, with setuid
+or fs capabilities, by statistically comparing the resource usage (rusage) of
+two configurable commands on Linux.
+
+Beware that false positives and negatives are not uncommon. Naturally other
+processes and system load can influence the run-time behavior of the programs
+under test, on an operating system with preemptive multi-tasking.
 
 Example: no difference (identical process)
 ------------------------------------------
