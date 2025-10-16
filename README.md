@@ -1,4 +1,4 @@
-`rusage_analyzer` attempts to find side-channel leaks in programs, with setuid
+`rusage_analyzer` attempts to find side-channel leaks in programs with setuid
 or fs capabilities, by statistically comparing the resource usage (rusage) of
 two configurable commands on Linux.
 
