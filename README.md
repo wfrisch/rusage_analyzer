@@ -78,4 +78,5 @@ References
 ==========
 
 - [getrusage()](https://manpages.opensuse.org/Tumbleweed/man-pages/getrusage.2.en.html)
+- [Mann-Whitney U test](https://en.wikipedia.org/wiki/Mann%E2%80%93Whitney_U_test)
 - [CVE-2024-0149 (information leak)](https://security.opensuse.org/2025/03/26/nvidia-modprobe.html)
