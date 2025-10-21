@@ -8,11 +8,12 @@ processes will influence the run-time behavior of the programs under test.
 Usage
 =====
 ```
+$ ./rusage_analyzer --help
 Usage: ./rusage_analyzer [GLOBAL_OPTIONS] --scenario-a [OPTS] -- <COMMAND_A> --scenario-b [OPTS] -- <COMMAND_B>
 
 Global Options:
-  -n <N>                    Number of samples to collect (default: 100)
-  -a <A>                    Significance level for the U-test (default: 0.05)
+  -n <N>                    Number of samples to collect (default: 200)
+  -a <A>                    Significance level for the U-test (default: 0.025)
 
 Scenario Options (must be placed after --scenario-a or --scenario-b):
   -l <STRING>               A descriptive label for the scenario in the report
