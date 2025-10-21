@@ -16,9 +16,9 @@
 
 
 struct GlobalConfig {
-	int sample_count = 100;
+	int sample_count = 200;
 	double alpha = 0.025;
-	int interleave = 100;
+	int interleave = 50;
 };
 
 struct ScenarioConfig {
@@ -84,9 +84,11 @@ double get_rusage_field(const rusage& r, const std::string& field) {
 // allocation in the collection loop, which could distort the results,
 // particulary max_rss, which is inherited from this process.
 // see: https://jkz.wtf/random-linux-oddity-1-ru_maxrss
-void collect_samples(const ScenarioConfig& scenario, int count, Samples& samples) {
-	std::cout << "[*] Collecting " << count << " samples for scenario: '" 
-		<< scenario.label << "'..." << std::endl;
+void collect_samples(const ScenarioConfig& scenario, int count, Samples& samples, bool verbose=true) {
+	if (verbose) {
+		std::cout << "[*] Collecting " << count << " samples for scenario: '"
+			<< scenario.label << "'..." << std::endl;
+	}
    
 	// for execvp
 	std::vector<const char*> cmd_c_str;
@@ -133,14 +135,18 @@ void collect_samples(const ScenarioConfig& scenario, int count, Samples& samples
 				double elapsed_us = double(std::chrono::duration_cast<std::chrono::microseconds>(time_elapsed).count());
 				samples.push_back({rusage_data, elapsed_us});
 				//std::cout << "\r	" << (i + 1) << "/" << count << std::flush;
-				std::cout << "." << std::flush;
+				if (verbose) {
+					std::cout << "." << std::flush;
+				}
 			} else {
 				perror("wait4");
 			}
 		}
 	}
 
-	std::cout << "\n[*] Collection complete.\n" << std::endl;
+	if (verbose) {
+		std::cout << "\n[*] Collection complete.\n" << std::endl;
+	}
 }
 
 /**
@@ -232,8 +238,8 @@ void analyze_results(const GlobalConfig& g_config, PreparedData& data_a, Prepare
 void print_usage(const char* prog_name) {
 	std::cerr << "Usage: " << prog_name << " [GLOBAL_OPTIONS] --scenario-a [OPTS] -- <COMMAND_A> --scenario-b [OPTS] -- <COMMAND_B>\n\n"
 	          << "Global Options:\n"
-	          << "  -n <N>                    Number of samples to collect (default: 100)\n"
-	          << "  -a <A>                    Significance level for the U-test (default: 0.05)\n\n"
+	          << "  -n <N>                    Number of samples to collect (default: 200)\n"
+	          << "  -a <A>                    Significance level for the U-test (default: 0.025)\n\n"
 	          << "Scenario Options (must be placed after --scenario-a or --scenario-b):\n"
 	          << "  -l <STRING>               A descriptive label for the scenario in the report\n"
 	          << "  -e <KEY=VALUE>            Set an environment variable (can be used multiple times)\n\n"
@@ -315,9 +321,12 @@ int main(int argc, char** argv) {
 	samples_b.reserve(g_config.sample_count);
 
 	// interleave sample collection to reduce environmental effects
+	std::cout << "[*] Collecting " << g_config.sample_count << " samples for each scenario, "
+		<< "(interleave = " << g_config.interleave << ")" << std::endl;
+	std::cout << "[*] Collection complete.\n" << std::endl;
 	for (int i = 0; i < g_config.sample_count; i += g_config.interleave) {
-		collect_samples(scenario_a, g_config.interleave, samples_a);
-		collect_samples(scenario_b, g_config.interleave, samples_b);
+		collect_samples(scenario_a, g_config.interleave, samples_a, false);
+		collect_samples(scenario_b, g_config.interleave, samples_b, false);
 	}
 
 	if (samples_a.empty() || samples_b.empty()) {
