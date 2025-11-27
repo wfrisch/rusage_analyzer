@@ -5,6 +5,8 @@ setuid or fs capabilities, by statistically comparing the resource usage
 Beware that false positives and negatives are not uncommon. Naturally other
 processes will influence the run-time behavior of the programs under test.
 
+[CVE-2024-0149: nvidia-modprobe: file existence test](https://security.opensuse.org/2025/03/26/nvidia-modprobe.html) serves an example for this problem.
+
 Usage
 =====
 ```
